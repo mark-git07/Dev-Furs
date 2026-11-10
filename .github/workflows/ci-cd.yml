@@ -1,18 +1,17 @@
 name: CI/CD
 
 on:
-  pull_request:
-    branches: [master]
   push:
     branches: [master]
 
 permissions:
   contents: read
 
-# Serialize production runs; newer PR revisions can cancel older checks.
+# Keep every production push queued, including its changelog update.
 concurrency:
   group: ci-cd-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   validate:
@@ -35,6 +34,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test changelog
+        run: node --test scripts/*.test.mjs
+
       - name: Build
         run: npm run build
 
@@ -56,6 +58,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -73,15 +77,7 @@ jobs:
         id: current
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          latest_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/master" --jq '.object.sha')
-          if [[ "$GITHUB_SHA" == "$latest_sha" ]]; then
-            echo "deploy=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "deploy=false" >> "$GITHUB_OUTPUT"
-            echo "### Deployment skipped" >> "$GITHUB_STEP_SUMMARY"
-            echo "This commit has been superseded on master." >> "$GITHUB_STEP_SUMMARY"
-          fi
+        run: node scripts/changelog.mjs check-current
 
       - name: Validate deployment configuration
         if: steps.current.outputs.deploy == 'true'
@@ -120,3 +116,28 @@ jobs:
           fi
           echo "### Cloudflare Pages production deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "$DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
+
+  changelog:
+    name: Update changelog
+    needs: [validate, deploy]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
+      actions: read
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Generate and publish changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/changelog.mjs
