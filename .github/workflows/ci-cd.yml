@@ -1,0 +1,122 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+# Serialize production runs; newer PR revisions can cancel older checks.
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    name: Lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload production build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Download validated build
+        uses: actions/download-artifact@v4
+        with:
+          name: production-dist
+          path: dist/
+
+      - name: Check current production commit
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/master" --jq '.object.sha')
+          if [[ "$GITHUB_SHA" == "$latest_sha" ]]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "### Deployment skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "This commit has been superseded on master." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Validate deployment configuration
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
+        run: |
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_PAGES_PROJECT_NAME; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing GitHub Actions setting: $name"
+              exit 1
+            fi
+          done
+          test -s dist/index.html
+
+      - name: Deploy production
+        if: steps.current.outputs.deploy == 'true'
+        id: deployment
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.136.3'
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }} --branch=master
+
+      - name: Summarize deployment
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.deployment-url }}
+          PAGES_ENVIRONMENT: ${{ steps.deployment.outputs.pages-environment }}
+        run: |
+          if [[ "$PAGES_ENVIRONMENT" != "production" ]]; then
+            echo "::error::Expected a production deployment. Set the Pages project's production branch to master."
+            exit 1
+          fi
+          echo "### Cloudflare Pages production deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "$DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
