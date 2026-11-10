@@ -1,5 +1,90 @@
 # React + TypeScript + Vite
 
+## CI/CD: GitHub Actions and Cloudflare Pages
+
+The workflow in [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)
+runs `npm ci`, `npm run lint`, and `npm run build` using Node.js 24.
+Pull requests targeting `master` run checks only. Successful pushes to
+`master` upload `dist/` as an artifact, then deploy that exact artifact to
+the existing Cloudflare Pages project. There are no PR preview deployments
+or manual release triggers.
+
+Production runs are serialized without cancelling an active deployment.
+Immediately before deployment, the workflow checks the current `master`
+commit and skips superseded builds. A push arriving after that check may
+briefly leave the preceding version live until the next successful run.
+Deployment failures fail the workflow; the Actions summary includes the
+deployment URL after a successful production upload.
+
+### One-time setup and cutover
+
+1. In the existing Cloudflare Pages project, confirm the production branch
+   is `master`. Keep the project, Git connection, and custom domains.
+2. Review the project's build environment variables. Any values needed
+   during the Vite build must be added explicitly to the workflow's build
+   step through GitHub Actions variables or secrets. Cloudflare build
+   variables are not automatically available to GitHub Actions. `VITE_*`
+   values are included in the public browser bundle and must not contain
+   secrets. The current app does not require build variables.
+3. Create a Cloudflare API token with **Account → Cloudflare Pages → Edit**
+   permission, scoped to the account containing the existing project.
+4. In the GitHub repository, open **Settings → Secrets and variables →
+   Actions** and add:
+
+   | Name | Type | Value |
+   | --- | --- | --- |
+   | `CLOUDFLARE_API_TOKEN` | Repository secret | The scoped API token |
+   | `CLOUDFLARE_ACCOUNT_ID` | Repository secret | The existing project's account ID |
+   | `CLOUDFLARE_PAGES_PROJECT_NAME` | Repository variable | The exact existing Pages project name, not its URL |
+
+5. Before merging the workflow to `master`, open the Cloudflare Pages
+   project's **Build → Branch control** settings. Turn off **Enable
+   automatic production branch deployments** and set preview branches to
+   **None (Disable automatic branch deployments)**. This prevents duplicate
+   deployments and ensures failed GitHub checks cannot be bypassed by a
+   Cloudflare Git build. The current production site remains available.
+6. Merge the workflow to `master`. In GitHub's **Actions** tab, confirm
+   **Lint and build** and **Deploy to Cloudflare Pages** succeed. In
+   Cloudflare, verify the deployment is marked **Production**, with the
+   expected commit, and that no automatic Git build also ran. Open the
+   deployment URL and existing production domain and check the page,
+   JavaScript, CSS, and images load.
+7. In the repository's branch protection or ruleset for `master`, require
+   the **Lint and build** status check before merging. The check becomes
+   selectable after its first workflow run.
+
+Cloudflare supports [Wrangler uploads to existing Git-connected projects
+with automatic deployments disabled](https://developers.cloudflare.com/pages/configuration/git-integration/#disable-automatic-deployments).
+See also [Cloudflare's CI deployment guide](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/).
+Credentials are used only in the production deployment job; pull request
+checks do not receive them.
+
+### Troubleshooting and rollback
+
+- **Missing GitHub Actions setting:** Add the named secret or repository
+  variable above, then rerun the failed job. Do not put credentials in the
+  workflow file or logs.
+- **Authentication or project errors:** Check the token's permission,
+  account scope, account ID, and exact Pages project name.
+- **A preview deployment was created instead of production:** Set the
+  existing Pages project's production branch to `master`, then rerun the
+  deployment job. The workflow intentionally fails if Cloudflare reports
+  a non-production upload.
+- **Lint or build fails:** Run `npm ci`, `npm run lint`, and `npm run build`
+  locally with Node.js 24 and fix the reported issue. Deployment is blocked
+  until validation succeeds. No automated application test suite is
+  configured yet.
+- **Deployment skipped:** The commit is no longer the head of `master`.
+  Check the workflow run for the latest commit. Older workflow reruns also
+  skip deployment, so use Cloudflare rollback to restore an older version.
+- **Rollback:** In the existing Pages project's deployments list, choose a
+  previous successful production deployment and use **Rollback to this
+  deployment**. Verify the production domain afterward. Also revert or fix
+  the faulty commit through a pull request; a subsequent successful push
+  to `master` will deploy again. Allow an active production workflow to
+  finish, or cancel it, before rolling back so it cannot overwrite the
+  rollback.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
