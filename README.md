@@ -158,3 +158,36 @@ export default defineConfig([
 ])
 
 ```
+
+## Automatic changelog
+
+`CHANGELOG.md` records each push to `master`, including changes whose build or
+deployment fails. The production workflow queues up to 100 pending runs and
+updates the changelog after validation and deployment finish. PR checks run
+separately and cancel outdated revisions. Generated changelog-only commits do
+not supersede source builds in the deployment head check.
+
+Each entry uses the original workflow creation timestamp in Asia/Manila, a
+comparison link, and categorized PR titles or direct commit subjects. Prefer
+`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `test:`, or `chore:` titles; scopes
+are retained and `!` marks breaking changes. Merged PRs appear once rather than
+repeating their individual commits. Other titles appear under Changed.
+
+The final job uses the built-in `GITHUB_TOKEN` with `contents: write` and
+`pull-requests: read`, plus `actions: read` for the original run timestamp; no new
+secret is needed. Before enabling this workflow,
+verify repository Actions policies and master branch rules permit the bot to
+push directly. Required PRs or status checks may block these writes: configure
+an explicitly permitted automation identity before enabling, or change the
+publication approach. Do not disable protections merely to clear an error.
+No repository settings are changed by this implementation.
+
+Bot commits modify only `CHANGELOG.md` and use the `[generated-changelog]`
+marker. GitHub does not start another push workflow for writes using its built-in
+token. If generation or publishing fails, fix the reported permission/API issue
+and rerun the original failed workflow job. Manually canceled runs and queue
+overflow also require rerunning the affected workflow. Source-SHA markers
+prevent duplicate entries. Concurrent pushes are retried three times without
+force-pushing. Force-push history rewrites are unsupported.
+
+Run generator tests locally with `node --test scripts/*.test.mjs`.
