@@ -2,6 +2,15 @@
 
 Summaries of changes pushed to `master`, newest first. Entries describe source changes, including changes whose validation or deployment failed. Timestamps use Asia/Manila (UTC+08:00). Generated entries are maintained by GitHub Actions.
 
+<!-- push:6f393afcdf3ab3720e112692c1b230317a2d219c 2026-11-11T07:04:18Z -->
+## 2026-11-11 15:04:18 +08:00 — 6f393af
+
+[Compare changes](https://github.com/mark-git07/Dev-Furs/compare/d9339ea33d5a84ee9994794c19b0a40dfcc46d88...6f393afcdf3ab3720e112692c1b230317a2d219c)
+
+### Added
+
+- make shortlist reactive ([#13](https://github.com/mark-git07/Dev-Furs/pull/13))
+
 <!-- push:5d21b399c2a91b12cc24d88ec46f8dd7e61e9936 2026-11-11T06:35:56Z -->
 ## 2026-11-11 14:35:56 +08:00 — 5d21b39
 
