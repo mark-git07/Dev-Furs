@@ -1,22 +1,20 @@
 import { Heart } from "lucide-react";
-import { type Dispatch, type SetStateAction } from "react";
 import type { Furry } from "../types";
+import { useLiked } from "../context/liked-context";
 
 export function LikeToggle({
-        id,
-        liked, 
-        setLiked
+        id
     }: { 
         id: Furry["id"];
-        liked: Furry["id"][];
-        setLiked: Dispatch<SetStateAction<Furry["id"][]>>;
     } ) {
+    const { liked, setLiked } = useLiked();
+
     return (
         <button 
             className="group"
             onClick={() =>
                 liked.includes(id)
-                    ? setLiked(liked.filter((likedId) => likedId !== id))
+                    ? setLiked(liked.filter((likedId: number) => likedId !== id))
                     : setLiked([...liked, id])
             }
         >
