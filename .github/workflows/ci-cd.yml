@@ -104,6 +104,15 @@ jobs:
           wranglerVersion: '4.136.3'
           command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }} --branch=master
 
+      - name: Upload Wrangler logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wrangler-logs
+          path: /home/runner/.config/.wrangler/logs/*.log
+          include-hidden-files: true
+          retention-days: 3
+
       - name: Summarize deployment
         if: steps.current.outputs.deploy == 'true'
         env:
