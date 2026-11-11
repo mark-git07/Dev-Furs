@@ -25,7 +25,7 @@ export function Shortlist() {
             width={32}
             alt="Chase"
             className="aspect-square w-8 object-cover"
-            src="/images/2.jpg"
+            src="/images/9.jpeg"
           />
           <p className="px-3 text-sm text-slate-800">Chase</p>
           <button className="group h-full border-l border-slate-100 px-2 hover:bg-slate-100">
@@ -52,7 +52,7 @@ export function Shortlist() {
             width={32}
             alt="Leia"
             className="aspect-square w-8 object-cover"
-            src="/images/3.jpg"
+            src="/images/10.jpeg"
           />
           <p className="px-3 text-sm text-slate-800">Leia</p>
           <button className="group h-full border-l border-slate-100 px-2 hover:bg-slate-100">

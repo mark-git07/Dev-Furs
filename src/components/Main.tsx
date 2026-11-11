@@ -1,14 +1,14 @@
 import Search from "./Search";
-import Shortlist from "./Shortlist";
 import List from "./List";
 import Form from "./Form";
 
-import { kitties } from "../data/kitties";
+import { furs } from "../data/furs";
 import { useState } from "react";
-import type { Kitty } from "../types";
+import type { Furry } from "../types";
+import { Shortlist } from "./Shortlist";
 
 function Main() {
-    const [liked, setLiked] = useState<Kitty["id"][]>([1, 3]);
+    const [liked, setLiked] = useState<Furry["id"][]>([1, 3]);
 
     return (
         <>
@@ -17,10 +17,10 @@ function Main() {
                 {/* Search */}
                 <Search />
                 {/* Shortlist */}
-                <Shortlist kitties={kitties} liked={liked} setLiked={setLiked}/>
+                <Shortlist />
             </div>
             {/* Kitten list */}
-            <List kitties={kitties} liked={liked} setLiked={setLiked} />
+            <List furs={furs} liked={liked} setLiked={setLiked} />
             {/* New Kitten form */}
             <Form />
         </>

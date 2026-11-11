@@ -1,31 +1,31 @@
 import type { Dispatch, SetStateAction } from "react";
-import { type Kitty } from "../types";
+import { type Furry } from "../types";
 import { LikeToggle } from "./LikeToggle";
 
-type KittyCardProps = {
-    kitty: Kitty,
-    liked: Kitty["id"][],
-    setLiked: Dispatch<SetStateAction<Kitty["id"][]>>
+type FurryCardProps = {
+    furry: Furry,
+    liked: Furry["id"][],
+    setLiked: Dispatch<SetStateAction<Furry["id"][]>>
 };
 
-function ListCard ({ kitty, liked, setLiked }: KittyCardProps) {
+function ListCard ({ furry, liked, setLiked }: FurryCardProps) {
     return (
         <li
-            key={kitty.id}
+            key={furry.id}
             className="overflow-clip rounded-lg bg-white shadow-md ring ring-black/5 hover:-translate-y-0.5"
         >
             <img
                 className="aspect-square object-cover"
-                alt={kitty.name}
-                src={kitty.imagePath}
+                alt={furry.name}
+                src={furry.imagePath}
             />
             <div className="gap flex items-center justify-between p-4 text-sm">
                 <div className="flex items-center gap-2">
-                    <p className="font-semibold">{kitty.name}</p>
+                    <p className="font-semibold">{furry.name}</p>
                     <span className="text-slate-300">·</span>
-                    <p className="text-slate-500">{kitty.vibe}</p>
+                    <p className="text-slate-500">{furry.vibe}</p>
                 </div>
-                <LikeToggle id={kitty.id} liked={liked} setLiked={setLiked}/>
+                <LikeToggle id={furry.id} liked={liked} setLiked={setLiked}/>
             </div>
         </li>
     );
