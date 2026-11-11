@@ -1,4 +1,4 @@
-export const kitties = [
+export const furs = [
     {
         id: 1,
         name: "Frisket",
