@@ -23,7 +23,10 @@ export function ShortlistCard({ id, Furry, liked, setLiked }: FurryCardProps) {
                 <p className="px-3 text-sm text-slate-800">{Furry.name}</p>
                 <button className="group h-full border-l border-slate-100 px-2 hover:bg-slate-100">
                     <X 
-                        onClick={() => { liked.includes(id) ? setLiked(liked.filter((likedId) => likedId !== id)) : setLiked([...liked, id]) }}
+                        onClick={() =>  
+                            liked.includes(id) 
+                                ? setLiked(liked.filter((likedId) => likedId !== id)) 
+                                : setLiked([...liked, id]) }
                         className="size-4 stroke-slate-400 group-hover:stroke-red-400"
                     />
                 </button>
