@@ -2,6 +2,15 @@
 
 Summaries of changes pushed to `master`, newest first. Entries describe source changes, including changes whose validation or deployment failed. Timestamps use Asia/Manila (UTC+08:00). Generated entries are maintained by GitHub Actions.
 
+<!-- push:a94df2434bd8b3aed1ff227343a6735e9312968e 2026-11-11T05:53:45Z -->
+## 2026-11-11 13:53:45 +08:00 — a94df24
+
+[Compare changes](https://github.com/mark-git07/Dev-Furs/compare/67c4f06f1addee65bd7d05d15f015b328fca75e3...a94df2434bd8b3aed1ff227343a6735e9312968e)
+
+### Added
+
+- setup tailwind css, remove css file ([#10](https://github.com/mark-git07/Dev-Furs/pull/10))
+
 <!-- push:e2696d8ac45e0462456bc0420c60698a88c1e448 2026-11-11T05:50:32Z -->
 ## 2026-11-11 13:50:32 +08:00 — e2696d8
 
