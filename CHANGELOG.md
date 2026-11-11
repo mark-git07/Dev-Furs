@@ -2,6 +2,15 @@
 
 Summaries of changes pushed to `master`, newest first. Entries describe source changes, including changes whose validation or deployment failed. Timestamps use Asia/Manila (UTC+08:00). Generated entries are maintained by GitHub Actions.
 
+<!-- push:e2696d8ac45e0462456bc0420c60698a88c1e448 2026-11-11T05:50:32Z -->
+## 2026-11-11 13:50:32 +08:00 — e2696d8
+
+[Compare changes](https://github.com/mark-git07/Dev-Furs/compare/e7e6017e524026b1dc566fd9872077c4f337de49...e2696d8ac45e0462456bc0420c60698a88c1e448)
+
+### Added
+
+- setup main font and logo ([#9](https://github.com/mark-git07/Dev-Furs/pull/9))
+
 <!-- push:e7e6017e524026b1dc566fd9872077c4f337de49 2026-11-11T05:50:17Z -->
 ## 2026-11-11 13:50:17 +08:00 — e7e6017
 
