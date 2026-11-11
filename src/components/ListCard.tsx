@@ -1,14 +1,11 @@
-import type { Dispatch, SetStateAction } from "react";
 import { type Furry } from "../types";
 import { LikeToggle } from "./LikeToggle";
 
 type FurryCardProps = {
-    furry: Furry,
-    liked: Furry["id"][],
-    setLiked: Dispatch<SetStateAction<Furry["id"][]>>
+    furry: Furry
 };
 
-function ListCard ({ furry, liked, setLiked }: FurryCardProps) {
+function ListCard ({ furry }: FurryCardProps) {
     return (
         <li
             key={furry.id}
@@ -25,7 +22,7 @@ function ListCard ({ furry, liked, setLiked }: FurryCardProps) {
                     <span className="text-slate-300">·</span>
                     <p className="text-slate-500">{furry.vibe}</p>
                 </div>
-                <LikeToggle id={furry.id} liked={liked} setLiked={setLiked}/>
+                <LikeToggle id={furry.id} />
             </div>
         </li>
     );

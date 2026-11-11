@@ -1,18 +1,16 @@
-import type { Dispatch, SetStateAction } from "react";
 import { Heart } from "lucide-react";
 
 import { type Furry } from "../types";
 import { ShortlistCard } from "./ShortlistCard";
+import { useLiked } from "../context/liked-context";
 
 function Shortlist({ 
-    furs,
-    liked,
-    setLiked
+    furs
     } : {
-        furs: Furry[],
-        liked: Furry["id"][],
-        setLiked: Dispatch<SetStateAction<Furry["id"][]>> 
+        furs: Furry[]
     }) {
+
+    const { liked, setLiked } = useLiked();
 
     const isLiked = furs.filter(
         Furry => liked.includes(Furry.id)
